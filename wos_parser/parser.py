@@ -117,6 +117,40 @@ def extract_authors(elem):
         authors.append(author)
     return authors
 
+
+def extract_contributors(elem):
+    """Extract list of contributors from given element tree"""
+    wos_id = extract_wos_id(elem)
+    authors = list()
+    contributors = elem.findall('./static_data/contributors/')
+    for contributor in contributors:
+        name = contributor.find('name')
+        dais_id = name.attrib.get('dais_id', '')
+        orcid_id = name.attrib.get('orcid_id', '')
+        r_id = name.attrib.get('r_id', '')
+        if name.find('full_name') is not None:
+            full_name = name.find('full_name').text
+        else:
+            full_name = ''
+        if name.find('first_name') is not None:
+            first_name = name.find('first_name').text
+        else:
+            first_name = ''
+        if name.find('last_name') is not None:
+            last_name = name.find('last_name').text
+        else:
+            last_name = ''
+        author = {'dais_id': dais_id,
+                  'orcid_id': orcid_id,
+                  'r_id': r_id,
+                  'full_name': full_name,
+                  'first_name': first_name,
+                  'last_name': last_name}
+        author.update({'wos_id': wos_id})
+        authors.append(author)
+    return authors
+
+
 def extract_keywords(elem):
     """Extract keywords and keywords plus each separated by semicolon"""
     keywords = elem.findall('./static_data/fullrecord_metadata/keywords/keyword')
