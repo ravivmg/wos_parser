@@ -311,7 +311,8 @@ def extract_funding(elem):
     grant_list = list()
     for grant in grants:
         if grant.find('grant_agency') is not None:
-            grant_list.append(grant.find('grant_agency').text)
+            if grant.find('grant_agency').text is not None:
+                grant_list.append(grant.find('grant_agency').text)
 
     return {'wos_id': wos_id,
             'funding_text': fund_text,

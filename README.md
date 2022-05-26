@@ -28,6 +28,7 @@ list of dictionary output.
 - `extract_conferences`
 - `extract_references`
 - `extract_identifiers`
+- `extract_contributors`
 
 ## Installation
 
@@ -42,7 +43,7 @@ $ python setup.py install
 or via pip
 
 ```bash
-$ pip install git+https://github.com/titipata/wos_parser.git
+$ pip install git+https://github.com/ravivmg/wos_parser.git
 ```
 
 ## License
