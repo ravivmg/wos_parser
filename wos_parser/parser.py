@@ -194,6 +194,35 @@ def extract_addresses(elem):
         address_dict_all.append(address_dict)
     return address_dict_all
 
+def extract_rp_addresses(elem):
+    """Give element tree of WoS, return list of reprint addresses"""
+    address_dict_all = list()
+    wos_id = extract_wos_id(elem)
+    addresses = elem.findall('./static_data/fullrecord_metadata/reprint_addresses/address_name')
+    for address in addresses:
+        address_dict = dict()
+        address_spec = address.find('address_spec')
+        addr_no = address_spec.attrib.get('addr_no', '')
+        for tag in ['city', 'state', 'country', 'zip', 'full_address']:
+            if address_spec.find(tag) is not None:
+                address_dict[tag] = address_spec.find(tag).text
+            else:
+                address_dict[tag] = ''
+        if address_spec.find('organizations') is not None:
+            organizations = '; '.join([oraginization.text for oraginization in address_spec.find('organizations')])
+        else:
+            organizations = ''
+        if address_spec.find('suborganizations') is not None:
+            suborganizations = '; '.join([s.text for s in address_spec.find('suborganizations')])
+        else:
+            suborganizations = ''
+        address_dict.update({'wos_id': wos_id,
+                             'addr_no': addr_no,
+                             'organizations': organizations,
+                             'suborganizations': suborganizations})
+        address_dict_all.append(address_dict)
+    return address_dict_all
+
 def extract_publisher(elem):
     """Extract publisher details"""
     wos_id = extract_wos_id(elem)
@@ -331,6 +360,51 @@ def extract_funding(elem):
     return {'wos_id': wos_id,
             'funding_text': fund_text,
             'funding_agency': '; '.join(grant_list)}
+
+def extract_grants(elem):
+    """Extract grant agency names and grant ID numbers from WoS"""
+    
+    wos_id = extract_wos_id(elem)
+    grants = elem.findall('./static_data/fullrecord_metadata/fund_ack/grants/grant')
+    grants_all = list()
+    
+    for grant in grants:
+        
+        if not isinstance(grant.find('grant_agency'), type(None)):
+            if not isinstance(grant.find('grant_agency').text, type(None)):
+                grant_agency = grant.find('grant_agency').text
+                
+                if not isinstance(grant.find('grant_agency[@pref="Y"]'), type(None)):
+                    if not isinstance(grant.find('grant_agency[@pref="Y"]'), type(None)):
+                        grant_agency_pref = grant.find('grant_agency[@pref="Y"]').text
+                    else:
+                        grant_agency_pref = ''
+                else:
+                    grant_agency_pref = ''     
+                       
+            else:
+                grant_agency = ''
+                grant_agency_pref = ''
+        else:
+            grant_agency = ''
+            grant_agency_pref = ''
+        
+        if grant.find('grant_ids') is not None:
+            grant_ids = grant.findall('./grant_ids/grant_id')
+            
+            for grant_id in grant_ids:
+                grant_cur = {'grant_agency': grant_agency, 'grant_agency_pref': grant_agency_pref, 'grant_id': grant_id.text}
+                grant_cur.update({'wos_id': wos_id})
+                grants_all.append(grant_cur)            
+        
+        else:
+            if grant_agency != '':
+                grant_cur = {'grant_agency': grant_agency, 'grant_agency_pref': grant_agency_pref, 'grant_id': ''}
+                grant_cur.update({'wos_id': wos_id})
+                grants_all.append(grant_cur)
+        
+    return grants_all
+        
 
 def extract_conferences(elem):
     """Extract list of conferences from given WoS element tree
