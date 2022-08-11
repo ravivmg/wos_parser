@@ -271,6 +271,20 @@ def extract_pub_info(elem):
         subheading = ''
     pub_info_dict.update({'subheading': subheading})
 
+    subjects = elem.findall('./static_data/fullrecord_metadata/category_info/subjects/subject')
+    
+    subjects_trad_list = list()
+    subjects_ext_list = list()
+    
+    for subject in subjects:
+        if (subject.attrib['ascatype'] == "traditional"):
+            subjects_trad_list.append(subject.text)
+        elif (subject.attrib['ascatype'] == "extended"):
+            subjects_ext_list.append(subject.text)
+        
+    pub_info_dict.update({'subjects_trad': '; '.join(subjects_trad_list)})
+    pub_info_dict.update({'subjects_ext': '; '.join(subjects_ext_list)})
+    
     doctype_tag = elem.find('./static_data/summary/doctypes/doctype')
     if doctype_tag is not None:
         doctype = doctype_tag.text
