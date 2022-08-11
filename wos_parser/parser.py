@@ -127,6 +127,7 @@ def extract_contributors(elem):
         name = contributor.find('name')
         dais_id = name.attrib.get('dais_id', '')
         orcid_id = name.attrib.get('orcid_id', '')
+        addr_no_raw = name.attrib.get('addr_no', '')
         r_id = name.attrib.get('r_id', '')
         if name.find('full_name') is not None:
             full_name = name.find('full_name').text
@@ -143,6 +144,7 @@ def extract_contributors(elem):
         author = {'dais_id': dais_id,
                   'orcid_id': orcid_id,
                   'r_id': r_id,
+                  'addr_no_raw': addr_no_raw,
                   'full_name': full_name,
                   'first_name': first_name,
                   'last_name': last_name}
@@ -193,7 +195,7 @@ def extract_addresses(elem):
                              'suborganizations': suborganizations})
         address_dict_all.append(address_dict)
     return address_dict_all
-
+    
 def extract_rp_addresses(elem):
     """Give element tree of WoS, return list of reprint addresses"""
     address_dict_all = list()
@@ -299,7 +301,7 @@ def extract_pub_info(elem):
     else:
         subheading = ''
     pub_info_dict.update({'subheading': subheading})
-
+    
     subjects = elem.findall('./static_data/fullrecord_metadata/category_info/subjects/subject')
     
     subjects_trad_list = list()
@@ -355,12 +357,12 @@ def extract_funding(elem):
     for grant in grants:
         if not isinstance(grant.find('grant_agency'), type(None)):
             if not isinstance(grant.find('grant_agency').text, type(None)):
-                grant_list.append(grant.find('grant_agency').text)
+                grant_list.append(grant.find('grant_agency').text.replace(";", ","))
 
     return {'wos_id': wos_id,
             'funding_text': fund_text,
             'funding_agency': '; '.join(grant_list)}
-
+            
 def extract_grants(elem):
     """Extract grant agency names and grant ID numbers from WoS"""
     
@@ -467,8 +469,7 @@ def extract_references(elem):
     ref_list = list()
     for reference in references:
         ref_dict = dict()
-        for tag in ['uid', 'citedAuthor', 'year', 'page',
-                    'volume', 'citedTitle', 'citedWork', 'doi']:
+        for tag in ['uid', 'year']:
             ref_tag = reference.find(tag)
             if ref_tag is not None:
                 ref_dict[tag] = ref_tag.text
